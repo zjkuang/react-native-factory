@@ -1,0 +1,14 @@
+{
+  "name": "@zjkuang/react-native-factory",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "index.js",
+  "bin": "bin.js",
+  "repository": "https://github.com/zjkuang/react-native-factory.git",
+  "author": "Zhengqian Kuang <dev.kuang@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@local/commonjs-utils": "file:packages/commonjs-utils"
+  }
+}
