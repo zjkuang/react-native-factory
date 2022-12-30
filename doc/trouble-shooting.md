@@ -21,6 +21,11 @@ export PATH=$HOME/.gem/ruby/2.6.0/bin:$PATH
 error Your Ruby version is 2.6.10, but your Gemfile specified 2.7.5
 ```
 ### Solution
+(0) Check current ruby version  
+`ruby -v`
+```
+ruby 2.6.10p210 (2022-04-12 revision 67958) [universal.x86_64-darwin22]
+```
 (1) Install `rvm`
 [Install RVM in macOS (step by step)](https://nrogap.medium.com/install-rvm-in-macos-step-by-step-d3b3c236953b)
 ```

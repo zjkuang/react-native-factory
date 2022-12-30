@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import {appLocation} from '@local/commonjs-utils';
+import appRootDir from 'app-root-dir';
 
 console.log('bin.js > Hello, world!');
 
-console.log(`bin.js > appLocation: ${appLocation()}`);
+console.log(`appRootDir=${appRootDir.get()}`);
