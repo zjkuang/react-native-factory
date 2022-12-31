@@ -1,6 +1,6 @@
 {
   "name": "@zjkuang/react-native-factory",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "type": "module",
   "main": "index.js",
   "bin": "bin.js",
@@ -10,6 +10,7 @@
   "private": false,
   "dependencies": {
     "app-root-dir": "^1.0.2",
-    "commander": "^9.4.1"
+    "commander": "^9.4.1",
+    "fs-extra": "^11.1.0"
   }
 }

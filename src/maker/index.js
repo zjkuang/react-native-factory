@@ -1,5 +1,6 @@
 import {program} from 'commander';
 import appRootDir from 'app-root-dir';
+import {copy} from 'fs-extra';
 import fs from 'fs';
 
 const parseArgs = () => {
@@ -41,9 +42,37 @@ const createApp = (args) => {
   const templatesDir = appRootDir.get() + '/node_modules/@zjkuang/react-native-factory/template-apps';
   let templateDir;
   if (template === 'default') {
-    templateDir = templatesDir + '/default';
+    templateDir = templatesDir + '/default/app';
   }
+
   console.log(`Creating app from template location ${templateDir}`);
+
+  let finished = false;
+  copy(templateDir, appName)
+  .then(() => {
+    console.log('Done!');
+  })
+  .catch((error) => {
+    console.log(`Failed. ${JSON.stringify(error)}`);
+  })
+  .finally(() => {
+    finished = true;
+  });
+  let count = 0;
+  let hourglass = setInterval(() => {
+    if (finished) {
+      clearInterval(hourglass);
+      return;
+    }
+    count++;
+    if (count >= 4) {
+      count = 0;
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
+    } else {
+      process.stdout.write('.');
+    }
+  }, 500);
 };
 
 export const make = () => {
