@@ -1,6 +1,6 @@
 {
   "name": "@zjkuang/react-native-factory",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "main": "index.js",
   "bin": "bin.js",
