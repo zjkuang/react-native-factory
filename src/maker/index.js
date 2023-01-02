@@ -3,6 +3,8 @@ import appRootDir from 'app-root-dir';
 import {copy} from 'fs-extra';
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs';
 
+const templateAppName = 'zjkuangrntemplateapp';
+
 const parseArgs = () => {
   const result = {};
   program
@@ -24,23 +26,40 @@ const parseArgs = () => {
 };
 
 const updateAppName = async (appName) => {
-  const infoPlist = `${appName}/ios/app/info.plist`;
-  const launchScreenStoryboard = `${appName}/ios/app/LaunchScreen.storyboard`;
+  const replaceStringInFile = async (spec) => {
+    try {
+      const text = readFileSync(spec.file).toString();
+      const updatedText = text.replace(spec.strTemplate, spec.strCustom);
+      writeFileSync(spec.file, updatedText);
+    } catch (error) {
+      throw error;
+    }
+    return;
+  };
+  const androidResStringsXml = {
+    file: `${appName}/android/app/src/main/res/values/strings.xml`,
+    strTemplate: `<string name="app_name">${templateAppName}</string>`,
+    strCustom: `<string name="app_name">${appName}</string>`,
+  };
+  const infoPlist = {
+    file: `${appName}/ios/${templateAppName}/Info.plist`,
+    strTemplate: `<string>${templateAppName}</string>`,
+    strCustom: `<string>${appName}</string>`,
+  };
+  const launchScreenStoryboard = {
+    file: `${appName}/ios/${templateAppName}/LaunchScreen.storyboard`,
+    strTemplate: `text="${templateAppName}"`,
+    strCustom: `text="${appName}"`,
+  };
   try {
-    const [infoPlistText, launchScreenStoryboardText] = await Promise.all([
-      readFileSync(infoPlist).toString(),
-      readFileSync(launchScreenStoryboard).toString(),
+    await Promise.all([
+      replaceStringInFile(androidResStringsXml),
+      replaceStringInFile(infoPlist),
+      replaceStringInFile(launchScreenStoryboard),
     ]);
-    const [updatedInfoPlistText, updatedLaunchScreenStoryboardText] = [
-      infoPlistText.replace('<string>app</string>', `<string>${appName}</string>`),
-      launchScreenStoryboardText.replace('text="app"', `text="${appName}"`),
-    ];
-    writeFileSync(infoPlist, updatedInfoPlistText);
-    writeFileSync(launchScreenStoryboard, updatedLaunchScreenStoryboardText);
   } catch (error) {
     throw error;
   }
-  return;
 };
 
 const createApp = async (args) => {
@@ -62,7 +81,7 @@ const createApp = async (args) => {
   const templatesDir = appRootDir.get() + '/node_modules/@zjkuang/react-native-factory/template-apps';
   let templateDir;
   if (template === 'default') {
-    templateDir = templatesDir + '/default/app';
+    templateDir = templatesDir + `/default/${templateAppName}`;
   }
 
   console.log(`Creating app from template location ${templateDir}`);
