@@ -1,7 +1,7 @@
 import {program} from 'commander';
 import appRootDir from 'app-root-dir';
 import {copy} from 'fs-extra';
-import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs';
+import {existsSync, mkdirSync, readFileSync, writeFileSync, renameSync} from 'fs';
 
 const templateAppName = 'zjkuangrntemplateapp';
 
@@ -25,41 +25,58 @@ const parseArgs = () => {
   return result;
 };
 
-const updateAppName = async (appName) => {
-  const replaceStringInFile = async (spec) => {
+const updateAppName = (appName) => {
+  process.stdout.write('Updating app name...');
+
+  renameSync(`${appName}/android/app/src/main/java/com/${templateAppName}`, `${appName}/android/app/src/main/java/com/${appName}`);
+  renameSync(`${appName}/android/app/src/debug/java/com/${templateAppName}`, `${appName}/android/app/src/debug/java/com/${appName}`);
+  renameSync(`${appName}/ios/${templateAppName}`, `${appName}/ios/${appName}`);
+  renameSync(`${appName}/ios/${templateAppName}.xcodeproj`, `${appName}/ios/${appName}.xcodeproj`);
+  renameSync(`${appName}/ios/${templateAppName}.xcworkspace`, `${appName}/ios/${appName}.xcworkspace`);
+  renameSync(`${appName}/ios/${templateAppName}Tests`, `${appName}/ios/${appName}Tests`);
+  
+  const files = [
+    'app.json',
+    'package.json',
+    'android/app/src/main/res/values/strings.xml',
+    'android/settings.gradle',
+    'android/app/_BUCK',
+    'android/app/build.gradle',
+    `android/app/src/debug/java/com/${appName}/ReactNativeFlipper.java`,
+    'android/app/src/main/AndroidManifest.xml',
+    `android/app/src/main/java/com/${appName}/MainActivity.java`,
+    `android/app/src/main/java/com/${appName}/MainApplication.java`,
+    `android/app/src/main/java/com/${appName}/newarchitecture/MainApplicationReactNativeHost.java`,
+    `android/app/src/main/java/com/${appName}/newarchitecture/components/MainComponentsRegistry.java`,
+    `android/app/src/main/java/com/${appName}/newarchitecture/modules/MainApplicationTurboModuleManagerDelegate.java`,
+    'android/app/src/main/jni/CMakeLists.txt',
+    'android/app/src/main/jni/MainApplicationTurboModuleManagerDelegate.h',
+    'android/app/src/main/jni/MainComponentsRegistry.h',
+    `ios/${appName}/Info.plist`,
+    `ios/${appName}/LaunchScreen.storyboard`,
+    'ios/Podfile',
+    `ios/${appName}/AppDelegate.mm`,
+    `ios/${appName}.xcodeproj/project.pbxproj`,
+    `ios/${appName}.xcodeproj/xcshareddata/xcschemes/${appName}.xcscheme`,
+    `ios/${appName}.xcworkspace/contents.xcworkspacedata`,
+    `ios/${appName}Tests/${appName}Tests.m`,
+  ];
+  files.forEach((_file) => {
+    const file = `${appName}/` + _file;
     try {
-      const text = readFileSync(spec.file).toString();
-      const updatedText = text.replace(spec.strTemplate, spec.strCustom);
-      writeFileSync(spec.file, updatedText);
+      if (existsSync(file)) {
+        const text = readFileSync(file).toString();
+        const updatedText = text.split(templateAppName).join(appName);
+        writeFileSync(file, updatedText);
+      }
     } catch (error) {
       throw error;
     }
-    return;
-  };
-  const androidResStringsXml = {
-    file: `${appName}/android/app/src/main/res/values/strings.xml`,
-    strTemplate: `<string name="app_name">${templateAppName}</string>`,
-    strCustom: `<string name="app_name">${appName}</string>`,
-  };
-  const infoPlist = {
-    file: `${appName}/ios/${templateAppName}/Info.plist`,
-    strTemplate: `<string>${templateAppName}</string>`,
-    strCustom: `<string>${appName}</string>`,
-  };
-  const launchScreenStoryboard = {
-    file: `${appName}/ios/${templateAppName}/LaunchScreen.storyboard`,
-    strTemplate: `text="${templateAppName}"`,
-    strCustom: `text="${appName}"`,
-  };
-  try {
-    await Promise.all([
-      replaceStringInFile(androidResStringsXml),
-      replaceStringInFile(infoPlist),
-      replaceStringInFile(launchScreenStoryboard),
-    ]);
-  } catch (error) {
-    throw error;
-  }
+  });
+
+  process.stdout.clearLine();
+  process.stdout.cursorTo(0);
+  process.stdout.write('App name updated.\n');
 };
 
 const createApp = async (args) => {
@@ -84,14 +101,15 @@ const createApp = async (args) => {
     templateDir = templatesDir + `/default/${templateAppName}`;
   }
 
-  console.log(`Creating app from template location ${templateDir}`);
-
   let finished = false;
   let count = 0;
   let hourglass = setInterval(async () => {
     if (finished) {
       clearInterval(hourglass);
-      await updateAppName(appName);
+      process.stdout.clearLine();
+      process.stdout.cursorTo(0);
+      console.log('Template app cloned.');
+      updateAppName(appName);
       console.log('Done!');
       return;
     }
@@ -105,7 +123,7 @@ const createApp = async (args) => {
     }
   }, 500);
   try {
-    await copy(templateDir, appName);
+    copy(templateDir, appName);
   } catch (error) {
     console.log(`Failed. ${JSON.stringify(error)}`);
   }
@@ -114,6 +132,5 @@ const createApp = async (args) => {
 
 export const make = () => {
   const args = parseArgs();
-  console.log(`>>> app: ${args.appName}, template: ${args.template}`);
   createApp(args);
 };
