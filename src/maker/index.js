@@ -63,14 +63,10 @@ const updateAppName = (appName) => {
   ];
   files.forEach((_file) => {
     const file = `${appName}/` + _file;
-    try {
-      if (existsSync(file)) {
-        const text = readFileSync(file).toString();
-        const updatedText = text.split(templateAppName).join(appName);
-        writeFileSync(file, updatedText);
-      }
-    } catch (error) {
-      throw error;
+    if (existsSync(file)) {
+      const text = readFileSync(file).toString();
+      const updatedText = text.split(templateAppName).join(appName);
+      writeFileSync(file, updatedText);
     }
   });
 
